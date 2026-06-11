@@ -1,0 +1,83 @@
+.reception-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.reception-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.5rem;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.header-logo { font-size: 1.5rem; }
+.header-brand h1 { font-size: 1.25rem; font-weight: 800; }
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.header-user { font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); }
+
+.reception-main-new {
+  display: flex;
+  flex: 1;
+  padding: 1.5rem;
+  gap: 1.5rem;
+  overflow: hidden;
+}
+
+.reception-sidebar {
+  width: 350px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.reception-queues-container {
+  display: flex;
+  flex: 1;
+  gap: 1.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem; /* Space for the new thin scrollbar */
+}
+
+.doctor-queue-column {
+  width: 450px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.queue-column-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.queue-column-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+@media (max-width: 1024px) {
+  .reception-main-new { flex-direction: column; overflow-y: auto; }
+  .reception-sidebar { width: 100%; overflow-y: visible; }
+  .reception-queues-container { overflow-x: visible; flex-direction: column; }
+  .doctor-queue-column { width: 100%; height: auto; }
+}
