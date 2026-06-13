@@ -6,49 +6,7 @@ const emailService = require('../services/emailService');
 
 const router = express.Router();
 
-const getToday = () => new Date().toISOString().split('T')[0];
-
-// Helper: build queue status for a doctor
-async function getDoctorQueueStatus(doctorId) {
-  const today = getToday();
-
-  const serving = await Token.findOne({
-    doctorId, date: today, status: 'serving',
-  }).select('-__v');
-
-  const waiting = await Token.find({
-    doctorId, date: today, status: 'waiting',
-  }).sort({ isPriority: -1, tokenNumber: 1 }).select('-__v');
-
-  const completedCount = await Token.countDocuments({
-    doctorId, date: today, status: 'completed',
-  });
-
-  const skippedCount = await Token.countDocuments({
-    doctorId, date: today, status: 'skipped',
-  });
-
-  // Calculate cumulative wait times for waiting patients
-  let cumulativeWait = serving ? serving.estimatedTimeMins : 0;
-  const waitingWithTimes = waiting.map((t) => {
-    const obj = t.toObject();
-    obj.estimatedWaitMins = cumulativeWait;
-    cumulativeWait += t.estimatedTimeMins;
-    return obj;
-  });
-
-  return {
-    doctorId,
-    serving,
-    waiting: waitingWithTimes,
-    stats: {
-      waitingCount: waiting.length,
-      completedCount,
-      skippedCount,
-      totalToday: waiting.length + completedCount + skippedCount + (serving ? 1 : 0),
-    },
-  };
-}
+const { getDoctorQueueStatus, getToday } = require('../services/queueService');
 
 // GET /api/queue/status - All doctors' queue status
 router.get('/status', protect, async (req, res) => {
@@ -205,10 +163,29 @@ router.post('/:doctorId/complete', protect, authorize('doctor'), async (req, res
     const doc = await Doctor.findOne({ _id: doctorId, userId: req.user._id });
     if (!doc) return res.status(403).json({ message: 'Not authorized for this queue' });
 
-    await Token.findOneAndUpdate(
+    const { prescription, instructions } = req.body;
+
+    const completedToken = await Token.findOneAndUpdate(
       { doctorId, date: today, status: 'serving' },
-      { status: 'completed', completedAt: new Date() }
+      { 
+        status: 'completed', 
+        completedAt: new Date(),
+        ...(prescription && { prescription }),
+        ...(instructions && { instructions })
+      },
+      { new: true }
     );
+
+    if (completedToken && (prescription || instructions)) {
+      emailService.sendPrescriptionEmail(
+        completedToken.email,
+        completedToken.patientName,
+        completedToken.tokenNumber,
+        doc.name,
+        prescription,
+        instructions
+      );
+    }
 
     const queueStatus = await getDoctorQueueStatus(doctorId);
 
@@ -232,23 +209,12 @@ router.post('/:doctorId/skip', protect, authorize('doctor'), async (req, res) =>
     const doc = await Doctor.findOne({ _id: doctorId, userId: req.user._id });
     if (!doc) return res.status(403).json({ message: 'Not authorized for this queue' });
 
-    // Find the currently serving token
-    const currentToken = await Token.findOne({ doctorId, date: today, status: 'serving' });
-    
-    // Automatically call the next patient BEFORE putting the current one back in the queue
-    const nextToken = await Token.findOneAndUpdate(
-      { doctorId, date: today, status: 'waiting' },
-      { status: 'serving', calledAt: new Date() },
-      { new: true, sort: { isPriority: -1, tokenNumber: 1 } }
+    // Simply mark the current serving patient as skipped.
+    // The doctor must manually call the next patient.
+    await Token.findOneAndUpdate(
+      { doctorId, date: today, status: 'serving' },
+      { status: 'waiting', $unset: { calledAt: 1 } }
     );
-
-    // If there was a serving patient, put them back at the top of the waiting queue
-    if (currentToken) {
-      currentToken.status = 'waiting';
-      // Optionally clear completedAt if it was ever set
-      currentToken.completedAt = undefined;
-      await currentToken.save();
-    }
 
     const queueStatus = await getDoctorQueueStatus(doctorId);
 

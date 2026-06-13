@@ -81,6 +81,7 @@
 | Screen | Route | Access | Purpose |
 |--------|-------|--------|---------|
 | **Login** | `/login` | Public | JWT authentication for staff |
+| **Public Join** | `/join` | Public | Self-registration portal for patients |
 | **Reception** | `/` | Admin, Receptionist | Add patients, view all doctor queues |
 | **Doctor Dashboard** | `/doctor` | Doctor only | Manage own queue: call, complete, skip |
 | **Public Display** | `/display` | Public (no auth) | Waiting room TV — live token display |
@@ -249,6 +250,18 @@ Building a queue system that works in a real clinic means handling every scenari
 ### 10. Concurrent Estimate Changes
 **Problem:** A nurse on the Doctor Dashboard and someone on Reception both adjusting the same patient's estimate.  
 **Solution:** Delta-based updates (`adjustment: +5` or `-5`) rather than absolute values, so concurrent changes accumulate correctly instead of overwriting each other.
+
+### 11. Self-Registration Abuse (Rate Limiting)
+**Problem:** A public `/join` page could be spammed by bots to flood the clinic queue.  
+**Solution:** `express-rate-limit` middleware strictly caps public endpoints (like form submission and phone-lookup) to 30 requests per minute per IP address.
+
+### 12. Active Patient Deduplication
+**Problem:** A patient getting impatient and registering themselves again, generating multiple active tokens in the queue.  
+**Solution:** Hardcoded database guards reject token creation if a patient already has a `waiting` or `serving` token for the same doctor on the current date, while silently updating their profile data.
+
+### 13. Legacy BSON Sort Handling
+**Problem:** New tokens with `isPriority: false` were magically jumping ahead of older tokens that had `isPriority` missing (undefined) due to MongoDB's sorting rules (`false > undefined`).  
+**Solution:** Backfilled the database to strictly enforce `isPriority: false` on all documents, ensuring consistent multi-key sorting (`{ isPriority: -1, tokenNumber: 1 }`).
 
 ---
 
@@ -463,6 +476,7 @@ Index: { doctorId: 1, date: 1, tokenNumber: 1 } — UNIQUE
 ## 🎨 Design Philosophy
 
 - **No CSS frameworks** — every pixel is intentional. We chose vanilla CSS to have complete control over the design system: custom properties for theming, hand-crafted animations, and responsive layouts without any framework overhead.
+- **Glassmorphism Aesthetics** — modern frosted-glass backdrops (`backdrop-filter: blur`), subtle semi-transparent cards, and fluid gradient backgrounds elevate the visual feel beyond a typical "medical software" UI.
 - **Component reuse** — `PatientCard` is a single component used across Reception, Doctor Dashboard, and potentially the Display page, ensuring visual consistency.
 - **Progressive disclosure** — the UI shows only what each role needs. Receptionists see intake forms + queue overview. Doctors see their own queue with action buttons. The public display shows only token numbers and wait times.
 - **Time formatting** — wait times automatically convert from minutes to `1 hr 20 mins` format when they exceed 60 minutes, keeping the display human-readable at a glance.

@@ -42,23 +42,30 @@ export default function Staff() {
   if (loading) return <div className="loading-screen"><div className="spinner" /></div>
 
   return (
-    <div>
-      <h2>👥 Staff Management</h2>
-      <p className="text-muted text-sm" style={{ marginBottom: '1.5rem' }}>Add receptionist accounts</p>
+    <div className="admin-page-content">
+      <div className="admin-page-header">
+        <div className="admin-page-title">
+          <h2>👥 Staff Management</h2>
+          <p className="admin-page-subtitle">Add and manage clinic personnel</p>
+        </div>
+      </div>
 
-      <form className="admin-form" onSubmit={handleSubmit}>
-        <input className="form-control" placeholder="Full name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-        <input className="form-control" type="email" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
-        <input className="form-control" type="password" placeholder="Password (min 6 chars)" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={6} />
-        <select className="form-control" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
-          <option value="receptionist">Receptionist</option>
-          <option value="admin">Admin</option>
-          <option value="doctor">Doctor</option>
-        </select>
-        
-        {form.role === 'doctor' && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', alignItems: 'start' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+      <div className="admin-card" style={{ marginBottom: '2rem' }}>
+        <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', color: '#0f172a', fontWeight: 700 }}>Add New Staff Member</h3>
+        <form onSubmit={handleSubmit}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
+            <input className="form-control" placeholder="Full name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+            <input className="form-control" type="email" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+            <input className="form-control" type="password" placeholder="Password (min 6 chars)" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={6} />
+            <select className="form-control" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
+              <option value="receptionist">Receptionist</option>
+              <option value="admin">Admin</option>
+              <option value="doctor">Doctor</option>
+            </select>
+          </div>
+          
+          {form.role === 'doctor' && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1rem', padding: '1rem', background: '#f8fafc', borderRadius: '0.5rem', border: '1px solid #e2e8f0' }}>
               <select className="form-control" value={form.specialization} onChange={(e) => setForm({ ...form, specialization: e.target.value })} required>
                 <option value="">Select Specialization</option>
                 <option value="General Physician">General Physician</option>
@@ -74,13 +81,17 @@ export default function Staff() {
               {form.specialization === 'Other' && (
                 <input className="form-control" placeholder="Enter custom specialization" value={form.customSpecialization} onChange={(e) => setForm({ ...form, customSpecialization: e.target.value })} required />
               )}
+              <input className="form-control" placeholder="Room Number" value={form.roomNumber} onChange={(e) => setForm({ ...form, roomNumber: e.target.value })} required />
             </div>
-            <input className="form-control" placeholder="Room Number" value={form.roomNumber} onChange={(e) => setForm({ ...form, roomNumber: e.target.value })} required />
+          )}
+          
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
+            <button className="btn btn-primary" type="submit" style={{ padding: '0.6rem 2rem', fontWeight: 600, boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)' }}>
+              + Add Staff Member
+            </button>
           </div>
-        )}
-        
-        <button className="btn btn-primary" type="submit">+ Add Staff</button>
-      </form>
+        </form>
+      </div>
 
       <div className="admin-table-wrap">
         <table className="admin-table">
@@ -101,7 +112,7 @@ export default function Staff() {
                 <td><span className={`badge ${u.role === 'admin' ? 'badge-serving' : 'badge-waiting'}`}>{u.role}</span></td>
                 <td className="text-sm text-muted">{new Date(u.createdAt).toLocaleDateString()}</td>
                 <td>
-                  <button className="btn btn-ghost btn-sm" onClick={() => handleDelete(u._id)}>🗑</button>
+                  <button className="btn btn-ghost btn-sm" onClick={() => handleDelete(u._id)} style={{ color: '#ef4444' }}>🗑 Remove</button>
                 </td>
               </tr>
             ))}

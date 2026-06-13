@@ -11,20 +11,21 @@ export default function PatientCard({ token, isServing, onComplete, onSkip, onCa
     <div
       className="card"
       style={{
-        borderLeft: isServing ? '4px solid var(--success)' : token.isPriority ? '4px solid white' : '4px solid hsl(210, 80%, 75%)',
-        border: token.isPriority && !isServing ? '2px solid var(--danger)' : 'none',
-        background: token.isPriority && !isServing ? 'var(--danger)' : 'var(--primary)',
+        borderLeft: isServing ? (token.isPriority ? '4px solid white' : '4px solid var(--success)') : token.isPriority ? '4px solid white' : '4px solid hsl(210, 80%, 75%)',
+        border: token.isPriority ? '2px solid var(--danger)' : 'none',
+        background: token.isPriority ? 'var(--danger)' : 'var(--primary)',
         color: 'white',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: compact ? '1.5rem 1.5rem' : '4.5rem 3rem',
+        padding: isServing ? '3rem 2rem' : '1.5rem 1.5rem',
         cursor: onClick ? 'pointer' : 'default',
         transition: 'transform 0.2s, box-shadow 0.2s',
-        boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
-        margin: 0,
-        width: '100%',
-        borderRadius: compact ? '24px' : '56px'
+        boxShadow: isServing ? '0 10px 25px rgba(0,0,0,0.1)' : '0 4px 6px rgba(0,0,0,0.05)',
+        margin: '0 auto',
+        width: isServing ? '85%' : '100%',
+        minHeight: isServing ? '250px' : 'auto',
+        borderRadius: isServing ? '32px' : '20px'
       }}
       onClick={() => onClick && onClick(token)}
       onMouseEnter={(e) => {
@@ -40,32 +41,34 @@ export default function PatientCard({ token, isServing, onComplete, onSkip, onCa
         }
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1, minWidth: 0 }}>
         <div style={{
-          width: compact ? '40px' : '50px', 
-          height: compact ? '40px' : '50px',
-          borderRadius: compact ? '20px' : '25px',
-          background: isServing ? 'var(--success)' : token.isPriority ? 'white' : 'hsla(0, 0%, 100%, 0.2)',
-          color: token.isPriority && !isServing ? 'var(--danger)' : 'white',
+          width: isServing ? '80px' : '48px', 
+          height: isServing ? '80px' : '48px',
+          borderRadius: '50%',
+          background: token.isPriority ? 'white' : isServing ? 'var(--success)' : 'hsla(0, 0%, 100%, 0.2)',
+          color: token.isPriority ? 'var(--danger)' : 'white',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontWeight: 'bold', fontSize: compact ? '1.1rem' : '1.25rem'
+          fontWeight: '800', fontSize: isServing ? '1.5rem' : '0.9rem',
+          flexShrink: 0
         }}>
           #{token.tokenNumber}
         </div>
-        <div>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ 
-            fontSize: compact ? '1rem' : '1.15rem', 
-            fontWeight: '600', 
+            fontSize: isServing ? '1.5rem' : '1.05rem', 
+            fontWeight: '700', 
             color: isServing ? 'var(--success)' : 'white', 
-            display: 'flex', alignItems: 'center', gap: '0.5rem' 
+            display: 'flex', alignItems: 'center', gap: '0.75rem',
+            flexWrap: 'wrap'
           }}>
-            {token.patientName}
-            {isServing && <span style={{ marginLeft: '0.5rem', fontSize: '0.85rem' }} className="badge badge-serving">Now Serving</span>}
-            {token.isPriority && !isServing && <span className="badge" style={{ background: 'white', color: 'var(--danger)', border: '1px solid white' }}>🚨 PRIORITY</span>}
+            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>{token.patientName}</span>
+            {isServing && <span style={{ fontSize: '0.75rem', background: token.isPriority ? 'white' : 'var(--success)', color: token.isPriority ? 'var(--danger)' : 'white', padding: '2px 6px', borderRadius: '4px', whiteSpace: 'nowrap' }} className="badge">Now Serving</span>}
+            {token.isPriority && <span className="badge" style={{ background: 'white', color: 'var(--danger)', border: 'none', fontSize: '0.7rem', padding: '2px 6px', borderRadius: '4px', whiteSpace: 'nowrap' }}>🚨 PRIORITY</span>}
           </div>
-          <div style={{ fontSize: '0.875rem', color: 'hsla(0, 0%, 100%, 0.7)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span>{token.visitPurpose}</span>
-            {!isServing && token.estimatedWaitMins !== undefined && <span>• ~{formatTime(token.estimatedWaitMins)} wait ({formatTime(token.estimatedTimeMins)} consult)</span>}
+          <div style={{ fontSize: isServing ? '1rem' : '0.85rem', color: 'hsla(0, 0%, 100%, 0.85)', marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: '500' }}>{token.visitPurpose}</span>
+            {!isServing && token.estimatedWaitMins !== undefined && <span style={{ opacity: 0.9 }}>~{formatTime(token.estimatedWaitMins)} wait ({formatTime(token.estimatedTimeMins)} consult)</span>}
             {isServing && token.estimatedTimeMins !== undefined && <span>• {formatTime(token.estimatedTimeMins)} consult</span>}
             
             {onEstimateChange && (
@@ -112,16 +115,16 @@ export default function PatientCard({ token, isServing, onComplete, onSkip, onCa
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: '0.5rem' }}>
+      <div style={{ display: 'flex', gap: '0.75rem', flexDirection: isServing ? 'column' : 'row', minWidth: isServing ? '140px' : 'auto' }}>
         {isServing ? (
           <>
             {onComplete && (
-              <button className="btn btn-primary" onClick={onComplete} style={{ background: 'var(--success)', borderColor: 'var(--success)', color: 'white' }}>
+              <button className="btn btn-primary" onClick={(e) => { e.stopPropagation(); onComplete(); }} style={{ background: 'var(--success)', borderColor: 'var(--success)', color: 'white' }}>
                 ✔ Complete
               </button>
             )}
             {onSkip && (
-              <button className="btn btn-outline" onClick={onSkip} style={{ color: 'var(--danger)', borderColor: 'var(--danger)', background: 'white' }}>
+              <button className="btn btn-outline" onClick={(e) => { e.stopPropagation(); onSkip(); }} style={{ color: 'var(--danger)', borderColor: 'var(--danger)', background: 'white' }}>
                 ⏭ Skip
               </button>
             )}
@@ -129,12 +132,31 @@ export default function PatientCard({ token, isServing, onComplete, onSkip, onCa
         ) : (
           <>
             {onCallNext && (
-              <button className="btn btn-primary" onClick={onCallNext} style={{ background: 'white', color: token.isPriority ? 'var(--danger)' : 'var(--primary)', borderColor: 'white' }}>
+              <button className="btn btn-primary" onClick={(e) => { e.stopPropagation(); onCallNext(); }} style={{ background: 'white', color: token.isPriority ? 'var(--danger)' : 'var(--primary)', borderColor: 'white' }}>
                 {token.isPriority ? '🚨 Call In' : 'Call Next'}
               </button>
             )}
             {onCancel && (
-              <button className="btn btn-outline" onClick={onCancel} style={{ color: 'white', borderColor: 'hsla(0, 0%, 100%, 0.3)', padding: '0.5rem' }} title="Remove from Queue">
+              <button 
+                className="btn" 
+                onClick={(e) => { e.stopPropagation(); onCancel(); }} 
+                style={{ 
+                  color: 'white', 
+                  backgroundColor: 'transparent',
+                  border: '1px solid hsla(0, 0%, 100%, 0.3)', 
+                  padding: '0.5rem',
+                  transition: 'border-color 0.2s, background-color 0.2s'
+                }} 
+                onMouseOver={(e) => {
+                  e.currentTarget.style.borderColor = 'hsla(0, 0%, 100%, 0.9)';
+                  e.currentTarget.style.backgroundColor = 'hsla(0, 0%, 100%, 0.1)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.borderColor = 'hsla(0, 0%, 100%, 0.3)';
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+                title="Remove from Queue"
+              >
                 🗑
               </button>
             )}

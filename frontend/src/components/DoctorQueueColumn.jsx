@@ -3,8 +3,8 @@ import { useSocket } from '../context/SocketContext'
 import NowServing from './NowServing'
 import WaitingList from './WaitingList'
 
-export default function DoctorQueueColumn({ doctor, authToken, addToast, onPatientClick }) {
-  const socket = useSocket()
+export default function DoctorQueueColumn({ doctor, authToken, addToast, onPatientClick, index = 0 }) {
+  const { socket } = useSocket()
   const [queue, setQueue] = useState({ waiting: [], serving: null })
   const [stats, setStats] = useState({ waitingCount: 0, completedCount: 0, skippedCount: 0, totalToday: 0 })
 
@@ -28,15 +28,25 @@ export default function DoctorQueueColumn({ doctor, authToken, addToast, onPatie
     if (socket) {
       const handleUpdate = (data) => {
         if (data.doctorId === doctor._id) {
-          fetchQueue()
+          if (data.waiting) {
+            setQueue({ waiting: data.waiting, serving: data.serving })
+            if (data.stats) setStats(data.stats)
+          } else if (data.queue && data.queue.waiting) {
+            setQueue({ waiting: data.queue.waiting, serving: data.queue.serving })
+            if (data.queue.stats) setStats(data.queue.stats)
+          } else {
+            fetchQueue()
+          }
         }
       }
       socket.on('queue:update', handleUpdate)
       socket.on('estimate:update', handleUpdate)
+      socket.on('connect', fetchQueue)
       
       return () => {
         socket.off('queue:update', handleUpdate)
         socket.off('estimate:update', handleUpdate)
+        socket.off('connect', fetchQueue)
       }
     }
   }, [doctor._id, socket, authToken])
@@ -107,7 +117,10 @@ export default function DoctorQueueColumn({ doctor, authToken, addToast, onPatie
   }
 
   return (
-    <div className="doctor-queue-column card">
+    <div 
+      className="doctor-queue-column card animate-slide-up-fade"
+      style={{ animationDelay: `${index * 0.1}s` }}
+    >
       <div className="card-header queue-column-header">
         <div>
           <h3>Dr. {doctor.name}</h3>

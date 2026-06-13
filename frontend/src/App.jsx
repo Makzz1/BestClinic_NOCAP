@@ -6,7 +6,10 @@ import Display from './pages/Display'
 import AdminLayout from './pages/admin/AdminLayout'
 import Staff from './pages/admin/Staff'
 import Reports from './pages/admin/Reports'
+import Analytics from './pages/admin/Analytics'
 import DoctorDashboard from './pages/DoctorDashboard'
+import NoNetwork from './components/NoNetwork'
+import PublicJoin from './pages/PublicJoin'
 
 function ProtectedRoute({ children, allowedRoles }) {
   const { user, loading } = useAuth()
@@ -28,9 +31,13 @@ function ProtectedRoute({ children, allowedRoles }) {
 
 export default function App() {
   return (
-    <Routes>
+    <>
+      <NoNetwork />
+      <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/display" element={<Display />} />
+      <Route path="/join" element={<PublicJoin />} />
+      <Route path="/join/:doctorId" element={<PublicJoin />} />
       <Route
         path="/"
         element={
@@ -55,11 +62,13 @@ export default function App() {
           </ProtectedRoute>
         }
       >
-        <Route index element={<Navigate to="staff" replace />} />
+        <Route index element={<Navigate to="analytics" replace />} />
+        <Route path="analytics" element={<Analytics />} />
         <Route path="staff" element={<Staff />} />
         <Route path="reports" element={<Reports />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </>
   )
 }

@@ -1,0 +1,376 @@
+/* doctor.css */
+
+/* ── LAYOUT ────────────────────── */
+.doctor-dashboard-main {
+  padding: 1.5rem 2rem;
+  display: flex;
+  justify-content: center;
+  height: calc(100vh - 80px);
+  overflow-y: auto;
+}
+
+.doctor-dashboard-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr; /* Slightly larger serving area */
+  gap: 2rem;
+  max-width: 1400px;
+  width: 100%;
+  align-items: stretch;
+}
+
+/* ── CARDS (SOFT & DEEP) ────────────────────── */
+.doctor-panel {
+  background: white;
+  border-radius: 24px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.doctor-panel:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08), 0 8px 16px rgba(0, 0, 0, 0.04);
+}
+
+/* ── PRESCRIPTION PAD ────────────────────── */
+.prescription-wrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.4s cubic-bezier(0.16, 1, 0.3, 1), margin-top 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  margin-top: 0;
+}
+
+.prescription-wrapper.active {
+  grid-template-rows: 1fr;
+  margin-top: 1rem;
+}
+
+.prescription-pad {
+  background: linear-gradient(to bottom right, #ffffff, #f8fafc);
+  min-height: 0;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.prescription-wrapper.active .prescription-pad {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.prescription-pad-header {
+  margin-bottom: 1.25rem;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.prescription-pad-header span {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  font-weight: 500;
+  background: #f1f5f9;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  margin-left: auto;
+}
+
+.prescription-field {
+  margin-bottom: 1.5rem;
+}
+
+.prescription-field:last-child {
+  margin-bottom: 0;
+}
+
+.prescription-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #475569;
+}
+
+.prescription-textarea {
+  width: 100%;
+  padding: 1rem;
+  border-radius: 16px;
+  border: 2px solid #e2e8f0;
+  background: #f8fafc;
+  font-family: 'Outfit', system-ui, sans-serif;
+  font-size: 0.95rem;
+  color: #334155;
+  transition: all 0.25s ease;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.prescription-textarea::placeholder {
+  color: #cbd5e1;
+}
+
+.prescription-textarea:hover {
+  border-color: #cbd5e1;
+}
+
+.prescription-textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+}
+
+/* ── HEADER STATUS PILL ────────────────────── */
+.status-pill-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: white;
+  padding: 0.5rem 0.5rem 0.5rem 1rem;
+  border-radius: 9999px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.2s ease;
+}
+
+.status-pill-container:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.status-pill-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.35rem 1rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  min-width: 100px;
+}
+
+.status-indicator.active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-indicator.paused {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 1rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  border: 1px solid #e2e8f0;
+  background: white;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 100px;
+}
+
+.status-toggle-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+/* ── EMERGENCY BANNER ────────────────────── */
+.emergency-banner-modern {
+  margin: 1.5rem 2rem 0 2rem;
+  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
+  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3);
+  animation: pulse-emergency 2s infinite;
+}
+
+@keyframes pulse-emergency {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); transform: scale(1); }
+  50% { transform: scale(1.01); }
+  70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); transform: scale(1); }
+}
+
+/* ── EMPTY STATE ────────────────────── */
+.empty-state-card {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #64748b;
+  background: #f8fafc;
+  border-radius: 20px;
+  border: 2px dashed #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1;
+}
+
+.empty-state-icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  opacity: 0.5;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+}
+
+.empty-state-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 0.5rem;
+}
+
+.empty-state-desc {
+  font-size: 0.95rem;
+  margin-bottom: 2rem;
+  max-width: 300px;
+}
+
+/* ── EMERGENCY DARK THEME ────────────────────── */
+.emergency-bg-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #000000;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.5s ease-out; /* slower fade out */
+}
+
+.emergency-mode .emergency-bg-overlay {
+  opacity: 1;
+  transition: opacity 0.4s ease-in; /* faster fade in */
+}
+
+/* Smooth Color Transitions */
+.reception-header, .doctor-panel, .prescription-textarea, .empty-state-card, .status-pill-container, .qc-brand-name, .prescription-pad-header, .prescription-label, .empty-state-title, h2, span, .badge-waiting, .status-toggle-btn {
+  transition: background-color 1.5s ease-out, color 1.5s ease-out, border-color 1.5s ease-out;
+}
+
+.emergency-mode .reception-header, .emergency-mode .doctor-panel, .emergency-mode .prescription-textarea, .emergency-mode .empty-state-card, .emergency-mode .status-pill-container, .emergency-mode .qc-brand-name, .emergency-mode .prescription-pad-header, .emergency-mode .prescription-label, .emergency-mode .empty-state-title, .emergency-mode h2, .emergency-mode span, .emergency-mode .badge-waiting, .emergency-mode .status-toggle-btn {
+  transition: background-color 0.4s ease-in, color 0.4s ease-in, border-color 0.4s ease-in;
+}
+
+/* Dark Theme Colors */
+.emergency-mode .reception-header {
+  background: rgba(15, 23, 42, 0.85) !important;
+  border-bottom-color: #334155 !important;
+}
+
+.emergency-mode .header-user {
+  color: #f8fafc !important;
+}
+
+.emergency-mode .doctor-panel {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f8fafc;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.emergency-mode .prescription-pad {
+  background: #1e293b;
+}
+
+.emergency-mode .prescription-textarea {
+  background: #0f172a;
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+.emergency-mode .prescription-textarea::placeholder {
+  color: #475569;
+}
+
+.emergency-mode .prescription-label, .emergency-mode .empty-state-desc {
+  color: #94a3b8;
+}
+
+.emergency-mode .prescription-pad-header, .emergency-mode h2, .emergency-mode .empty-state-title {
+  color: #f8fafc;
+}
+
+.emergency-mode .prescription-pad-header span {
+  background: #334155;
+  color: #cbd5e1;
+}
+
+.emergency-mode .empty-state-card {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+.emergency-mode .status-pill-container {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.emergency-mode .status-pill-label {
+  color: #cbd5e1;
+}
+
+.emergency-mode .status-toggle-btn {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: #f8fafc;
+}
+
+.emergency-mode .status-toggle-btn:hover {
+  background: #e2e8f0;
+}
+
+.emergency-mode .qc-brand-name {
+  background: linear-gradient(135deg, #60a5fa 0%, #34d399 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+.emergency-mode .qc-brand-sub {
+  color: #94a3b8 !important;
+}
+
+.emergency-mode .badge-waiting {
+  background: #1e3a8a !important;
+  color: #93c5fd !important;
+  border-color: #1e40af !important;
+}
+
+.reception-header, .doctor-dashboard-main {
+  position: relative;
+  z-index: 1;
+}

@@ -41,6 +41,46 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Emergency Banner */
+.emergency-banner {
+  background-color: #ff0000;
+  color: #000000;
+  font-weight: 900;
+  font-size: 1.1rem;
+  letter-spacing: 0.1em;
+  padding: 1rem 0;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 1.5rem;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.marquee {
+  display: inline-flex;
+  width: max-content;
+  animation: marquee 15s linear infinite;
+}
+
+.marquee span {
+  display: inline-flex;
+  white-space: nowrap;
+  padding-right: 1rem;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
 /* UI Components */
 .card {
   background: var(--card);
@@ -461,4 +501,47 @@ body {
   font-size: 0.95rem;
   color: var(--text);
   line-height: 1.5;
+}
+
+/* ── BRAND LOGO COMPONENT ────────────────────── */
+.qc-brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.qc-brand-icon {
+  line-height: 1;
+  filter: drop-shadow(0 0 14px rgba(59, 130, 246, 0.4));
+  animation: pulse-icon 3s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes pulse-icon {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.08); }
+}
+
+.qc-brand-name {
+  font-family: 'Outfit', system-ui, sans-serif;
+  font-size: 1.625rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #2563eb 0%, #059669 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.qc-brand-sub {
+  font-family: 'Outfit', system-ui, sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #64748b;
+  margin: 0;
+  margin-top: 0.1rem;
 }

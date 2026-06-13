@@ -1,15 +1,6 @@
 const mongoose = require('mongoose');
 
-const tokenSchema = new mongoose.Schema({
-  tokenNumber: {
-    type: Number,
-    required: true,
-  },
-  patientId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Patient',
-    required: true,
-  },
+const requestSchema = new mongoose.Schema({
   patientName: {
     type: String,
     required: [true, 'Patient name is required'],
@@ -44,22 +35,10 @@ const tokenSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
-  prescription: {
-    type: String,
-    trim: true,
-  },
-  instructions: {
-    type: String,
-    trim: true,
-  },
   doctorId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Doctor',
     required: true,
-  },
-  estimatedTimeMins: {
-    type: Number,
-    default: 10,
   },
   date: {
     type: String,
@@ -67,25 +46,12 @@ const tokenSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['waiting', 'serving', 'completed', 'skipped', 'cancelled'],
-    default: 'waiting',
-  },
-  isPriority: {
-    type: Boolean,
-    default: false,
-  },
-  calledAt: {
-    type: Date,
-  },
-  completedAt: {
-    type: Date,
-  },
+    enum: ['pending', 'approved', 'rejected'],
+    default: 'pending',
+  }
 }, { timestamps: true });
 
-// Prevent duplicate token numbers per doctor per day
-tokenSchema.index({ doctorId: 1, date: 1, tokenNumber: 1 }, { unique: true });
+// Optimize querying for pending requests by date and status
+requestSchema.index({ status: 1, date: 1 });
 
-// Optimize date-based filtering for history and reports
-tokenSchema.index({ date: -1 });
-
-module.exports = mongoose.model('Token', tokenSchema);
+module.exports = mongoose.model('PatientRequest', requestSchema);

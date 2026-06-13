@@ -4,6 +4,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
 const connectDB = require('./config/db');
+const rateLimit = require('express-rate-limit');
 
 // Route imports
 const authRoutes = require('./routes/auth');
@@ -11,6 +12,8 @@ const doctorRoutes = require('./routes/doctors');
 const userRoutes = require('./routes/users');
 const patientRoutes = require('./routes/patients');
 const queueRoutes = require('./routes/queue');
+const requestRoutes = require('./routes/requests');
+const analyticsRoutes = require('./routes/analytics');
 
 const app = express();
 const server = http.createServer(app);
@@ -33,12 +36,24 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Rate limiters for public endpoints
+const publicJoinLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 30, // Limit each IP to 30 requests per `window` (here, per minute)
+  message: { message: 'Too many requests from this IP, please try again after a minute.' },
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/doctors', doctorRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/patients/public-lookup', publicJoinLimiter); // Apply only to public lookup before the main patients router
 app.use('/api/patients', patientRoutes);
 app.use('/api/queue', queueRoutes);
+app.use('/api/requests', publicJoinLimiter, requestRoutes); // Apply to request submissions
+app.use('/api/analytics', analyticsRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

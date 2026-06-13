@@ -14,8 +14,8 @@ export default function NowServing({ serving, onEstimateChange, onPatientClick }
       </div>
 
       {serving ? (
-        <div className="now-serving-content animate-flip" key={animKey}>
-          <div className="now-serving-token">
+        <div className={`now-serving-content animate-flip ${serving.isPriority ? 'priority-serving' : ''}`} key={animKey}>
+          <div className={`now-serving-token ${serving.isPriority ? 'priority-token' : ''}`}>
             <span className="token-label">TOKEN</span>
             <span className="token-number">#{serving.tokenNumber}</span>
           </div>
@@ -45,13 +45,15 @@ export default function NowServing({ serving, onEstimateChange, onPatientClick }
         .now-serving-card { overflow: hidden; }
         .now-serving-content {
           display: flex;
+          flex-direction: column;
           align-items: center;
+          justify-content: center;
+          text-align: center;
           gap: 1.25rem;
-          padding: 1rem;
+          padding: 1.5rem;
           background: var(--primary-light);
           border-radius: var(--radius-sm);
           margin-bottom: 1rem;
-          flex-wrap: wrap;
         }
         .now-serving-token {
           display: flex;
@@ -69,8 +71,9 @@ export default function NowServing({ serving, onEstimateChange, onPatientClick }
         .now-serving-estimate {
           display: flex;
           align-items: center;
+          justify-content: center;
           gap: 0.5rem;
-          margin-top: 0.5rem;
+          margin-top: 0.75rem;
         }
         .estimate-value { font-weight: 700; font-size: 1rem; color: var(--primary); min-width: 55px; text-align: center; }
         .estimate-value { font-weight: 700; font-size: 1rem; color: var(--primary); min-width: 55px; text-align: center; }
@@ -83,6 +86,11 @@ export default function NowServing({ serving, onEstimateChange, onPatientClick }
           color: var(--primary-dark);
           text-decoration: underline;
         }
+        .priority-serving { background: hsla(350, 70%, 55%, 0.1) !important; }
+        .priority-token { background: var(--danger) !important; }
+        .priority-serving .estimate-value { color: var(--danger) !important; }
+        .priority-serving .clickable-name { color: var(--danger) !important; }
+        .priority-serving .clickable-name:hover { color: #b91c1c !important; }
       `}</style>
     </div>
   )

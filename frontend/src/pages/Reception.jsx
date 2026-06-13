@@ -6,13 +6,15 @@ import { useSocket } from '../context/SocketContext'
 import AddPatientForm from '../components/AddPatientForm'
 import DoctorQueueColumn from '../components/DoctorQueueColumn'
 import PatientDetailsModal from '../components/PatientDetailsModal'
+import PendingRequests from '../components/PendingRequests'
+import BrandLogo from '../components/BrandLogo'
 import Toast from '../components/Toast'
 import '../css/reception.css'
 
 export default function Reception() {
   const { user, token, logout } = useAuth()
   const navigate = useNavigate()
-  const socket = useSocket()
+  const { socket } = useSocket()
 
   const [doctors, setDoctors] = useState([])
   const [toasts, setToasts] = useState([])
@@ -38,7 +40,11 @@ export default function Reception() {
 
     if (socket) {
       socket.on('doctor:update', fetchDoctors)
-      return () => socket.off('doctor:update', fetchDoctors)
+      socket.on('connect', fetchDoctors)
+      return () => {
+        socket.off('doctor:update', fetchDoctors)
+        socket.off('connect', fetchDoctors)
+      }
     }
   }, [token, socket])
 
@@ -49,23 +55,22 @@ export default function Reception() {
   return (
     <div className="reception-page">
       <header className="reception-header">
-        <div className="header-brand">
-          <span className="header-logo">🏥</span>
-          <h1>QueueCure</h1>
-        </div>
+        <BrandLogo subtitle="Reception" />
         <div className="header-right">
           {user.role === 'admin' && (
             <button className="btn btn-outline btn-sm" onClick={() => navigate('/admin')}>
               ⚙️ Admin Panel
             </button>
           )}
+          <PendingRequests authToken={token} onApproved={handlePatientAdded} />
           <span className="header-user">{user.name} ({user.role})</span>
           <button className="btn btn-ghost btn-sm" onClick={logout}>Logout</button>
         </div>
       </header>
 
-      <main className="reception-main-new">
+      <main className="reception-main-new animate-slide-up-fade">
         <div className="reception-sidebar">
+
           {doctors.length > 0 ? (
             <AddPatientForm 
               doctors={doctors} 
@@ -84,13 +89,14 @@ export default function Reception() {
         
         <div className="reception-queues-container">
           {doctors.length > 0 ? (
-            doctors.map(doctor => (
+            doctors.map((doctor, index) => (
               <DoctorQueueColumn 
                 key={doctor._id} 
                 doctor={doctor} 
                 authToken={token} 
                 addToast={addToast} 
                 onPatientClick={setSelectedPatient}
+                index={index}
               />
             ))
           ) : (
@@ -102,7 +108,12 @@ export default function Reception() {
       </main>
 
       <Toast toasts={toasts} />
-      <PatientDetailsModal patient={selectedPatient} onClose={() => setSelectedPatient(null)} />
+      <PatientDetailsModal 
+        patient={selectedPatient} 
+        onClose={() => setSelectedPatient(null)} 
+        authToken={token}
+        onUpdated={(updatedPatient) => setSelectedPatient(updatedPatient)}
+      />
     </div>
   )
 }

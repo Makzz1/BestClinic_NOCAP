@@ -1,0 +1,55 @@
+# Returning Patient Recognition — "We Remember You"
+
+This plan outlines the implementation of the patient history lookup feature. This will reduce friction at reception and provide doctors with historical context.
+
+## User Review Required
+
+> [!IMPORTANT]
+> **Auto-fill behavior:** When a matching phone number is typed, the system will auto-fill the patient's name, age, sex, email, and marital status. If the receptionist has already started typing the name, should we overwrite it or only fill empty fields? I plan to overwrite to ensure consistency with past records, but the receptionist can always edit the auto-filled values. Does this sound good?
+
+## Proposed Changes
+
+### Backend
+
+#### [MODIFY] [patients.js](file:///d:/college/hackathon/Queue_cure/backend/routes/patients.js)
+Add a new route `GET /api/patients/lookup` to search for past visits by phone number.
+
+- **Logic:**
+  - Extract `phone` from `req.query`.
+  - Validate phone number format.
+  - Query the `Token` collection for all records matching the `phone` number, sorting by `createdAt` descending (newest first).
+  - Populate the `doctorId` to get the doctor's name.
+  - Return a JSON object containing:
+    - `patientDetails`: extracted from the most recent record (name, age, sex, email, marital status).
+    - `history`: an array of past visits (date, doctor name, visit purpose, reason/notes, status).
+
+### Frontend
+
+#### [MODIFY] [AddPatientForm.jsx](file:///d:/college/hackathon/Queue_cure/frontend/src/components/AddPatientForm.jsx)
+Implement debounced phone lookup and auto-fill.
+
+- **State:** Add `history` state to store past visit data, and `isLookingUp` for a loading indicator.
+- **Effect:** Add a `useEffect` that watches `form.phone`. If it reaches 10 digits, debounce for 500ms and call `/api/patients/lookup?phone=...`.
+- **Auto-fill:** If a match is found, update the form state with the returned `patientDetails`.
+- **UI:** Render a "Mini History Card" right below the phone input if history is found (e.g., *"✨ Welcome back, [Name]! Last visit: [Date] for [Purpose]"*).
+
+#### [MODIFY] [PatientDetailsModal.jsx](file:///d:/college/hackathon/Queue_cure/frontend/src/components/PatientDetailsModal.jsx)
+Show past visit timeline to the doctor.
+
+- **State:** Add `history` state to store past visits.
+- **Effect:** When the modal opens with a valid `patient`, fetch `/api/patients/lookup?phone=${patient.phone}`.
+- **UI:** Add a "Past Visits" section below the current visit details. Render a simple vertical timeline or list showing the date, doctor, and purpose of previous visits. Filter out the current visit from the timeline.
+
+## Verification Plan
+
+### Automated Tests
+- Test `/api/patients/lookup` with a known phone number to ensure it returns sorted history and correctly populated doctor data.
+- Test with an unknown phone number to ensure it returns an empty history without crashing.
+
+### Manual Verification
+1. Open the Reception page.
+2. Start adding a patient. Type a 10-digit phone number of an existing patient.
+3. Verify that the form fields instantly auto-fill and the "Welcome back" card appears.
+4. Complete the patient addition.
+5. Open the Doctor Dashboard, click on the patient card to open the modal.
+6. Verify that the "Past Visits" timeline appears correctly, showing the history but excluding the currently active session.

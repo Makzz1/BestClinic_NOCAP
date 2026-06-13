@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const PDFDocument = require('pdfkit');
 
 class EmailService {
   constructor() {
@@ -74,6 +75,77 @@ class EmailService {
       console.log(`Email sent successfully to ${patientEmail} for Token #${tokenNumber}: ${info.messageId}`);
     } catch (error) {
       console.error(`Failed to send email to ${patientEmail}:`, error.message);
+    }
+  }
+
+  async sendPrescriptionEmail(patientEmail, patientName, tokenNumber, doctorName, prescription, instructions) {
+    if (!patientEmail || !process.env.MAIL_USER || !process.env.MAIL_PASS) return;
+
+    try {
+      // Generate PDF in memory
+      const pdfBuffer = await new Promise((resolve, reject) => {
+        const doc = new PDFDocument({ margin: 50 });
+        let buffers = [];
+        doc.on('data', buffers.push.bind(buffers));
+        doc.on('end', () => resolve(Buffer.concat(buffers)));
+        doc.on('error', reject);
+
+        // Header
+        doc.fontSize(24).fillColor('#4F46E5').text('QueueCure Clinic', { align: 'center' });
+        doc.fontSize(12).fillColor('#6B7280').text('Digital Prescription', { align: 'center' });
+        doc.moveDown(2);
+
+        // Details
+        doc.fillColor('#000000').fontSize(14).text(`Doctor: Dr. ${doctorName}`);
+        doc.text(`Patient: ${patientName}`);
+        doc.text(`Date: ${new Date().toLocaleDateString()}`);
+        doc.text(`Token #: ${tokenNumber}`);
+        doc.moveDown(2);
+
+        // Medicines
+        if (prescription) {
+          doc.fontSize(16).fillColor('#4F46E5').text('Prescribed Medicines');
+          doc.moveDown(0.5);
+          doc.fontSize(12).fillColor('#000000').text(prescription, { lineGap: 4 });
+          doc.moveDown(2);
+        }
+
+        // Instructions
+        if (instructions) {
+          doc.fontSize(16).fillColor('#4F46E5').text('Instructions');
+          doc.moveDown(0.5);
+          doc.fontSize(12).fillColor('#000000').text(instructions, { lineGap: 4 });
+        }
+
+        doc.end();
+      });
+
+      const mailOptions = {
+        from: `"QueueCure Clinic" <${process.env.MAIL_USER}>`,
+        to: patientEmail,
+        subject: `Your Digital Prescription from Dr. ${doctorName}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
+            <h2 style="color: #4F46E5;">Digital Prescription</h2>
+            <p>Hello <strong>${patientName}</strong>,</p>
+            <p>Please find attached the digital prescription and instructions from your visit with <strong>Dr. ${doctorName}</strong> today.</p>
+            <p>We wish you a quick recovery!</p>
+            <p style="color: #6B7280; font-size: 12px; margin-top: 30px;">Thank you for using QueueCure!</p>
+          </div>
+        `,
+        attachments: [
+          {
+            filename: `Prescription_${patientName.replace(/\\s+/g, '_')}.pdf`,
+            content: pdfBuffer,
+            contentType: 'application/pdf',
+          },
+        ],
+      };
+
+      const info = await this.transporter.sendMail(mailOptions);
+      console.log(`Prescription Email sent to ${patientEmail} for Token #${tokenNumber}: ${info.messageId}`);
+    } catch (error) {
+      console.error(`Failed to send prescription email to ${patientEmail}:`, error.message);
     }
   }
 }
